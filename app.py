@@ -15,7 +15,6 @@ def get_db_connection():
         ssl_disabled=True
     )
 
-
 # ====== 1️⃣ GET FAQ ANSWER ======
 @app.route('/faqs', methods=['GET'])
 def get_faq():
@@ -41,20 +40,15 @@ def get_faq():
 def save_unanswered():
     """Save an unanswered question for later review"""
     try:
-        from datetime import datetime  # Import datetime here
-        
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No JSON data provided'}), 400
-            
+
         question = data.get('question', '').strip()
         if not question:
             return jsonify({'error': 'No question provided'}), 400
 
         conn = get_db_connection()
-        if not conn:
-            return jsonify({'error': 'Database connection failed'}), 500
-            
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO unanswered_questions (question, created_at)
@@ -65,10 +59,10 @@ def save_unanswered():
         conn.close()
 
         return jsonify({
-            'status': 'saved', 
+            'status': 'saved',
             'question': question
         }), 200
-        
+
     except Exception as e:
         print(f"Error saving unanswered question: {e}")
         return jsonify({
@@ -86,7 +80,6 @@ def get_unanswered():
     results = cursor.fetchall()
     cursor.close()
     conn.close()
-
     return jsonify({'unanswered_questions': results})
 
 # ====== 3️⃣ GET STUDENT FEEDBACK COUNTS ======
@@ -101,13 +94,11 @@ def get_feedback_counts():
     conn.close()
     return jsonify({'feedback_counts': results})
 
-
 # ====== 3️⃣.5️⃣ ADD STUDENT FEEDBACK COUNT ======
 @app.route('/student_feedback_counts', methods=['POST'])
 def add_feedback_count():
     """Add new feedback count record"""
     data = request.get_json()
-
     student_id = data.get('student_id')
     feedback_type = data.get('feedback_type')
     count = data.get('count', 1)
@@ -127,15 +118,29 @@ def add_feedback_count():
 
     return jsonify({'status': 'added', 'student_id': student_id, 'feedback_type': feedback_type})
 
+# ====== 4️⃣ GET COURSES ======
+@app.route('/courses', methods=['GET'])
+def get_courses():
+    """Fetch all courses"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM courses ORDER BY course_name ASC")
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
 
-# ====== 4️⃣ HEALTH CHECK ======
+        return jsonify({'courses': results}), 200
+
+    except Exception as e:
+        print(f"Error fetching courses: {e}")
+        return jsonify({'error': 'Failed to fetch courses', 'details': str(e)}), 500
+
+# ====== 5️⃣ HEALTH CHECK ======
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'healthy'})
 
-
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
