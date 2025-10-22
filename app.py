@@ -94,29 +94,34 @@ def get_feedback_counts():
     conn.close()
     return jsonify({'feedback_counts': results})
 
-# ====== 3️⃣.5️⃣ ADD STUDENT FEEDBACK COUNT ======
 @app.route('/student_feedback_counts', methods=['POST'])
 def add_feedback_count():
     """Add new feedback count record"""
     data = request.get_json()
-    student_id = data.get('student_id')
-    feedback_type = data.get('feedback_type')
+    
+    # Accept the full structure
+    course = data.get('course')
+    stanine = data.get('stanine')
+    gwa = data.get('gwa')
+    strand = data.get('strand')
+    rating = data.get('rating')
+    hobbies = data.get('hobbies')
     count = data.get('count', 1)
 
-    if not student_id or not feedback_type:
+    if not all([course, stanine, gwa, strand, rating, hobbies]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO student_feedback_counts (student_id, feedback_type, count, created_at)
-        VALUES (%s, %s, %s, %s)
-    """, (student_id, feedback_type, count, datetime.now()))
+        INSERT INTO student_feedback_counts (course, stanine, gwa, strand, rating, hobbies, count, created_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """, (course, stanine, gwa, strand, rating, hobbies, count, datetime.now()))
     conn.commit()
     cursor.close()
     conn.close()
 
-    return jsonify({'status': 'added', 'student_id': student_id, 'feedback_type': feedback_type})
+    return jsonify({'status': 'added', 'course': course, 'rating': rating})
 
 # ====== 4️⃣ GET COURSES ======
 @app.route('/courses', methods=['GET'])
@@ -144,3 +149,4 @@ def health():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
