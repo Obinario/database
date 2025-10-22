@@ -41,6 +41,8 @@ def get_faq():
 def save_unanswered():
     """Save an unanswered question for later review"""
     try:
+        from datetime import datetime  # Import datetime here
+        
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No JSON data provided'}), 400
@@ -48,18 +50,6 @@ def save_unanswered():
         question = data.get('question', '').strip()
         if not question:
             return jsonify({'error': 'No question provided'}), 400
-
-        # Get created_at from request or use current time
-        created_at = data.get('created_at')
-        if created_at:
-            # Parse the ISO timestamp from the chatbot
-            from datetime import datetime
-            try:
-                created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-            except:
-                created_at = datetime.now()
-        else:
-            created_at = datetime.now()
 
         conn = get_db_connection()
         if not conn:
@@ -69,25 +59,22 @@ def save_unanswered():
         cursor.execute("""
             INSERT INTO unanswered_questions (question, created_at)
             VALUES (%s, %s)
-        """, (question, created_at))
+        """, (question, datetime.now()))
         conn.commit()
         cursor.close()
         conn.close()
 
         return jsonify({
             'status': 'saved', 
-            'question': question,
-            'created_at': created_at.isoformat()
+            'question': question
         }), 200
         
     except Exception as e:
-        # Log the error for debugging
         print(f"Error saving unanswered question: {e}")
         return jsonify({
             'error': 'Failed to save question',
             'details': str(e)
         }), 500
-
 
 # ====== 2️⃣.5️⃣ GET ALL UNANSWERED QUESTIONS ======
 @app.route('/unanswered_questions', methods=['GET'])
@@ -101,7 +88,6 @@ def get_unanswered():
     conn.close()
 
     return jsonify({'unanswered_questions': results})
-
 
 # ====== 3️⃣ GET STUDENT FEEDBACK COUNTS ======
 @app.route('/student_feedback_counts', methods=['GET'])
@@ -151,4 +137,5 @@ def health():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
