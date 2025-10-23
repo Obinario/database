@@ -141,6 +141,39 @@ def get_courses():
         print(f"Error fetching courses: {e}")
         return jsonify({'error': 'Failed to fetch courses', 'details': str(e)}), 500
 
+# ====== 🗑️ DELETE UNANSWERED QUESTION BY ID ======
+@app.route('/unanswered_questions/<int:question_id>', methods=['DELETE'])
+def delete_unanswered_question(question_id):
+    """
+    Delete a specific unanswered question by its ID.
+    Example:
+    DELETE /unanswered_questions/5
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM unanswered_questions WHERE id = %s", (question_id,))
+        conn.commit()
+        affected_rows = cursor.rowcount
+        cursor.close()
+        conn.close()
+
+        if affected_rows == 0:
+            return jsonify({'error': f'No question found with id {question_id}'}), 404
+
+        return jsonify({
+            'status': 'deleted',
+            'id': question_id,
+            'message': 'Unanswered question successfully deleted.'
+        }), 200
+
+    except Exception as e:
+        print(f"Error deleting unanswered question: {e}")
+        return jsonify({
+            'error': 'Failed to delete question',
+            'details': str(e)
+        }), 500
+
 # ====== 5️⃣ HEALTH CHECK ======
 @app.route('/health', methods=['GET'])
 def health():
@@ -149,4 +182,5 @@ def health():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
