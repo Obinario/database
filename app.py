@@ -179,8 +179,14 @@ def delete_unanswered_question(question_id):
 def health():
     return jsonify({'status': 'healthy'})
 
+# ===== 🖥️ SIMPLE UI =====
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 
