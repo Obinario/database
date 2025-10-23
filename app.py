@@ -132,19 +132,17 @@ def get_courses():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT course_name FROM courses ORDER BY course_name ASC")
+        cursor.execute("SELECT * FROM courses ORDER BY course_name ASC")
         results = cursor.fetchall()
         cursor.close()
         conn.close()
 
-        # Extract just the course names
-        course_names = [row['course_name'] for row in results]
-        return jsonify(course_names), 200  # Return direct list instead of wrapped object
+        return jsonify({'courses': results}), 200
 
     except Exception as e:
         print(f"Error fetching courses: {e}")
         return jsonify({'error': 'Failed to fetch courses', 'details': str(e)}), 500
-        
+
 # ====== 🗑️ DELETE UNANSWERED QUESTION BY ID ======
 @app.route('/unanswered_questions/<int:question_id>', methods=['DELETE'])
 def delete_unanswered_question(question_id):
@@ -191,8 +189,4 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
-
-
 
