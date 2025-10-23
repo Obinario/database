@@ -98,7 +98,6 @@ def get_feedback_counts():
 
 @app.route('/student_feedback_counts', methods=['POST'])
 def add_feedback_count():
-    """Add new feedback count record"""
     data = request.get_json()
     
     # Accept the full structure
@@ -106,25 +105,15 @@ def add_feedback_count():
     stanine = data.get('stanine')
     gwa = data.get('gwa')
     strand = data.get('strand')
-    rating = data.get('rating')
+    rating = data.get('rating')  # "like", "dislike", "neutral"
     hobbies = data.get('hobbies')
     count = data.get('count', 1)
 
     if not all([course, stanine, gwa, strand, rating, hobbies]):
         return jsonify({'error': 'Missing required fields'}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO student_feedback_counts (course, stanine, gwa, strand, rating, hobbies, count, created_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-    """, (course, stanine, gwa, strand, rating, hobbies, count, datetime.now()))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
     return jsonify({'status': 'added', 'course': course, 'rating': rating})
-
+    
 # ====== 4️⃣ GET COURSES ======
 @app.route('/courses', methods=['GET'])
 def get_courses():
@@ -189,4 +178,5 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
