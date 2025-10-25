@@ -37,6 +37,55 @@ def get_faq():
     else:
         return jsonify({'answer': None, 'source': 'not_found'})
 
+# ====== 2️⃣ GET ALL FAQS FOR SUGGESTIONS ======
+@app.route('/faqs/all', methods=['GET'])
+def get_all_faqs():
+    """Get all FAQs for chatbot suggestions"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, question, answer FROM faqs ORDER BY id")
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        if results:
+            return jsonify({
+                'faqs': results,
+                'count': len(results),
+                'source': 'database'
+            })
+        else:
+            return jsonify({
+                'faqs': [],
+                'count': 0,
+                'source': 'empty'
+            })
+    except Exception as e:
+        return jsonify({
+            'error': 'Database connection failed',
+            'message': str(e)
+        }), 500
+
+# Alternative endpoint
+@app.route('/questions', methods=['GET'])
+def get_all_questions():
+    """Alternative endpoint to get all questions"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, question, answer FROM faqs ORDER BY id")
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'questions': results,
+            'count': len(results)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ====== 2️⃣ SAVE UNANSWERED QUESTION ======
 @app.route('/unanswered_questions', methods=['POST'])
 def save_unanswered():
