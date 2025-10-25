@@ -36,6 +36,29 @@ def get_faq():
         return jsonify({'answer': result['answer'], 'source': 'database'})
     else:
         return jsonify({'answer': None, 'source': 'not_found'})
+        
+# ====== 1️⃣ GET FAQ QUESTIONS ======
+@app.route('/faqs/list', methods=['GET'])
+def get_all_faqs():
+    """Get all FAQs for suggestions"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, question, answer FROM faqs ORDER BY id")
+        faqs = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'faqs': faqs,
+            'count': len(faqs)
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # ====== 2️⃣ SAVE UNANSWERED QUESTION ======
 @app.route('/unanswered_questions', methods=['POST'])
@@ -178,6 +201,7 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 
 
