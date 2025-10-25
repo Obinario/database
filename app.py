@@ -128,14 +128,14 @@ def add_feedback_count():
     stanine = data.get('stanine')
     gwa = data.get('gwa')
     strand = data.get('strand')
-    rating = data.get('rating')  # "like", "dislike", "neutral"
+    rating = data.get('rating')
     hobbies = data.get('hobbies')
     count = data.get('count', 1)
 
     if not all([course, stanine, gwa, strand, rating, hobbies]):
         return jsonify({'error': 'Missing required fields'}), 400
 
-    return jsonify({'status': 'added', 'course': course, 'rating': rating})
+    return jsonify({'status': 'added', 'course': course, 'rating': rating})  # ❌ NO DATABASE INSERT!
     
 # ====== 4️⃣ GET COURSES ======
 @app.route('/courses', methods=['GET'])
@@ -201,6 +201,7 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 
 
