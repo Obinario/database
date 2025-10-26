@@ -129,31 +129,55 @@ def add_feedback_count():
         stanine = data.get('stanine')
         gwa = data.get('gwa')
         strand = data.get('strand')
-        rating = data.get('rating')  # "like", "dislike"
+        rating = data.get('rating')
         hobbies = data.get('hobbies')
         count = data.get('count', 1)
 
         if not all([course, stanine, gwa, strand, rating, hobbies]):
             return jsonify({'error': 'Missing required fields'}), 400
 
-        # ✅ ACTUALLY INSERT INTO DATABASE
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO student_feedback_counts 
-            (course, stanine, gwa, strand, rating, hobbies, count, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (course, stanine, gwa, strand, rating, hobbies, count, datetime.now(), datetime.now()))
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return jsonify({
-            'status': 'added', 
-            'course': course, 
-            'rating': rating,
-            'id': cursor.lastrowid
-        }), 200
+        
+        try:
+            # Try to insert new record
+            cursor.execute("""
+                INSERT INTO student_feedback_counts 
+                (course, stanine, gwa, strand, rating, hobbies, count, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (course, stanine, gwa, strand, rating, hobbies, count, datetime.now(), datetime.now()))
+            conn.commit()
+            
+            return jsonify({
+                'status': 'added', 
+                'course': course, 
+                'rating': rating,
+                'id': cursor.lastrowid,
+                'action': 'inserted'
+            }), 200
+            
+        except mysql.connector.IntegrityError as e:
+            if e.errno == 1062:  # Duplicate entry error
+                # Update the count for existing record
+                cursor.execute("""
+                    UPDATE student_feedback_counts 
+                    SET count = count + 1, updated_at = %s
+                    WHERE course = %s AND stanine = %s AND gwa = %s AND strand = %s AND rating = %s
+                """, (datetime.now(), course, stanine, gwa, strand, rating))
+                conn.commit()
+                
+                return jsonify({
+                    'status': 'updated', 
+                    'course': course, 
+                    'rating': rating,
+                    'action': 'count_incremented'
+                }), 200
+            else:
+                raise e
+        
+        finally:
+            cursor.close()
+            conn.close()
 
     except Exception as e:
         print(f"Error adding feedback: {e}")
@@ -161,7 +185,6 @@ def add_feedback_count():
             'error': 'Failed to add feedback',
             'details': str(e)
         }), 500
-    
 # ====== 4️⃣ GET COURSES ======
 @app.route('/courses', methods=['GET'])
 def get_courses():
@@ -226,6 +249,7 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 
 
