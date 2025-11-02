@@ -2,19 +2,20 @@ from flask import Flask, request, jsonify
 import mysql.connector
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template
-
+import mysql.connector
 
 app = Flask(__name__)
 
 # ===== DATABASE CONNECTION =====
+
 def get_db_connection():
     return mysql.connector.connect(
-        host="shuttle.proxy.rlwy.net",
-        user="root",
-        password="JCfNOSYEIrgNDqxwzaHBEufEJDPLQkKU",
-        database="railway",
-        port=40148,
-        ssl_disabled=True
+        host=os.getenv("DB_HOST", "your-oracle-cloud-mysql-hostname.mysql.database.oc1.oraclecloud.com"),
+        user=os.getenv("DB_USER", "admin"),
+        password=os.getenv("DB_PASS", "YourOraclePassword"),
+        database=os.getenv("DB_NAME", "psau_admission"),
+        port=int(os.getenv("DB_PORT", 3306)),
+        ssl_disabled=True  # or False if Oracle requires SSL
     )
 
 # ====== 1️⃣ GET FAQ ANSWER ======
@@ -249,6 +250,7 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 
 
