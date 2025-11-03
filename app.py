@@ -2,22 +2,18 @@ from flask import Flask, request, jsonify
 import mysql.connector
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template
-import mysql.connector
-import os
-from dotenv import load_dotenv
 
-load_dotenv() 
 
 app = Flask(__name__)
 
 # ===== DATABASE CONNECTION =====
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "34.170.34.174"),  # your default host
-        user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASS", "Psau_2025"),
-        database=os.getenv("DB_NAME", "psau_admission"),
-        port=int(os.getenv("DB_PORT", 3306)),
+        host="shuttle.proxy.rlwy.net",
+        user="root",
+        password="JCfNOSYEIrgNDqxwzaHBEufEJDPLQkKU",
+        database="railway",
+        port=40148,
         ssl_disabled=True
     )
 
@@ -253,11 +249,6 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
-
-
-
 
 
 
