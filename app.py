@@ -9,11 +9,11 @@ app = Flask(__name__)
 # ===== DATABASE CONNECTION =====
 def get_db_connection():
     return mysql.connector.connect(
-        host="shuttle.proxy.rlwy.net",
+        host="ballast.proxy.rlwy.net",
         user="root",
-        password="JCfNOSYEIrgNDqxwzaHBEufEJDPLQkKU",
+        password="dVBlhdVopIpMhmYnxAsyldOkxaiXTHLi",
         database="railway",
-        port=40148,
+        port=10649,
         ssl_disabled=True
     )
 
@@ -249,6 +249,7 @@ def index():
 # ====== APP RUNNER ======
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 
 
